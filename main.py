@@ -81,7 +81,8 @@ class Property:
         self.proxy = proxy
         self.ua = UserAgent(verify_ssl=False, use_cache_server=False)
         self.detail = {
-            "id": self.url.split("/")[-1]
+            "id": self.url.split("/")[-1],
+            "url": self.url
         }
 
         self.get_detail()
