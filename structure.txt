@@ -1,0 +1,29 @@
+
+
+Data Architecture
+
+-----Introduction Part
+#House ID
+#Street Address
+#City + State + Zip code
+#Price
+#Beds
+#Baths
+#Finished Area
+    #>> Price/Sqft or Sqm
+-----Home Fact
+#Year Built (Optional)
+#Lot Size (Optional)
+#Building Style (Optional)
+#MLS #
+-----Public Fact
+#Year Renovated (Optional)
+#Style
+#County
+-----Transportation Score
+#Walk
+#Walk Suggestion
+#Transit
+#Transit Suggestion
+#Bike
+#Bike Suggestion

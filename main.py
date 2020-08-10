@@ -80,13 +80,52 @@ class Property:
             self.url = url
         self.proxy = proxy
         self.ua = UserAgent(verify_ssl=False, use_cache_server=False)
-        self.detail = {}
+        self.detail = {
+            "id": self.url.split("/")[-1]
+        }
+
+        self.get_detail()
 
     def get_detail(self):
-        pass
+        proxy = {"proxy": "http:\\{}".format(random.choice(self.proxy))}
+        headers = {'User-Agent': self.ua.random}
+        page = requests.get(self.url, proxies=proxy, headers=headers).content
+        soup = BeautifulSoup(page, "html.parser")
+        tree = lxml.html.fromstring(page)
+        self.detail["street"] = soup.find_all("span", {"class":"street-address"})[0].get_text().strip()
+        self.detail["city"] = soup.find_all("span", {"class": "locality"})[0].get_text().replace(",","").strip()
+        self.detail["state"] = soup.find_all("span", {"class": "region"})[0].get_text()
+        self.detail["zip_code"] = soup.find_all("span", {"class": "postal-code"})[0].get_text()
+        self.detail["price"] = soup.find_all("div", {"class": "info-block price"})[0].find_all("div", {"class": "statsValue"})[0].get_text().replace("$","").replace(",","")
+        self.detail["beds"] = soup.find_all("div", {"data-rf-test-id": "abp-beds"})[0].find_all("div", {"class": "statsValue"})[0].get_text()
+        self.detail["beds"] = soup.find_all("div", {"data-rf-test-id": "abp-baths"})[0].find_all("div", {"class": "statsValue"})[0].get_text()
+        self.detail["area"] = soup.find_all("div", {"data-rf-test-id": "abp-sqFt"})[0].find_all("span", {"class": "statsValue"})[0].get_text().replace(",","")
+
+        year = tree.xpath("//span[@class='header font-color-gray-light inline-block' and text()='Year Built']/following-sibling::span/text()")
+        self.detail["year"] = year[0] if year else "-"
+        lot_size = tree.xpath("//span[@class='header font-color-gray-light inline-block' and text()='Lot Size']/following-sibling::span/text()")
+        self.detail["lot_size"] = lot_size[0] if lot_size else "-"
+        style = tree.xpath("//span[@class='header font-color-gray-light inline-block' and text()='Style']/following-sibling::span/text()")
+        self.detail["style"] = style[0] if style else "-"
+        mls = tree.xpath("//span[@class='header font-color-gray-light inline-block' and text()='MLS#']/following-sibling::span/text()")
+        self.detail["MLS"] = mls[0] if mls else "-"
+        htype = tree.xpath("//span[@class='table-label' and text()='Style']/following-sibling::div/text()")
+        self.detail["type"] = htype[0] if htype else "-"
+        renovated = tree.xpath("//span[@class='table-label' and text()='Year Renovated']/following-sibling::div/text()")
+        self.detail["renovated"] = renovated[0] if renovated else "-"
+        county = tree.xpath("//span[@class='table-label' and text()='County']/following-sibling::div/text()")
+        self.detail["county"] = county[0] if county else "-"
+        walk = tree.xpath("//div[@class='transport-icon-and-percentage walkscore']//span[contains(@class,'value')]/text()")
+        self.detail["walk_score"] = walk[0] if walk else "-"
+        transit = tree.xpath("//div[@class='transport-icon-and-percentage transitscore']//span[contains(@class,'value')]/text()")
+        self.detail["transit_score"] = transit[0] if transit else "-"
+        bike = tree.xpath("//div[@class='transport-icon-and-percentage bikescore']//span[contains(@class,'value')]/text()")
+        self.detail["bike_score"] = bike[0] if bike else "-"
 
 if __name__ == "__main__":
     p = Proxy()
-    r = Redfin(zip_code="46204", proxy=p.ip_proxies)
-    print(r.property_urls)
+    r = Redfin(zip_code="19406", proxy=p.ip_proxies)
+    url = r.property_urls[0]
+    pro = Property(url=url, proxy=p.ip_proxies)
+    print(pro.detail)
 
